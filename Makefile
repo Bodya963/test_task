@@ -2,7 +2,7 @@ CFLAGS = -Wall -g
 
 NAME = indexer
 
-OBJ = main.o compar.o hasher.o
+OBJ = main.o  hasher.o
 
 
 all: $(NAME)
@@ -11,7 +11,7 @@ all: $(NAME)
 	gcc -c -o $@ $^
 
 $(NAME) : $(OBJ)
-	gcc -o $(NAME) $^ $(CFLAGS) -lblake3
+	gcc -o $(NAME) $^ $(CFLAGS) -lblake3 -lm
 
 clean:
 	$(RM) $(OBJ) $(NAME)
