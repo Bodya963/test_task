@@ -2,37 +2,6 @@
 
 #include "header.h"
 
-//----------------------------
-
-struct node
-{
-    
-    uint8_t * hash;
-    
-    node * lift;
-    node * right;
-    
-};
-
-typedef struct node node;
-
-typedef struct  
-{
-
-    int capacity;
-    int count_leaf;
-
-    char name[SIZE_NAME];
-
-    uint8_t* main_hash ;
-
-    node * left;
-    node *  right;
-
-}hash_tree;
-
-//----------------------------
-
 //-FUNC---------------------
 
 

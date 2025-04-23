@@ -25,8 +25,11 @@ hash_tree * make_tree( const char * path, int val_err)
 
     h_tree->count_leaf = make_size_leaf( val_err, &(h_tree->capacity)); // считаем сколько нам нужно листрев
     
-    long size_part = size_file / h_tree->count_leaf;     // размер одного кусочка 
-    printf("count_leaf= %d, size_part = %ld, size_file = %ld\n", h_tree->count_leaf, size_part, size_file);
+    long size_part = 0;
+    if( h_tree->count_leaf != 0)
+    {
+        size_part = size_file / h_tree->count_leaf;     // размер одного кусочка 
+    }
     
     h_tree->left = create_struct_tree( (h_tree->count_leaf) / 2);      // создали структуру дерева, но пока пустое 
     h_tree->right = create_struct_tree( (h_tree->count_leaf) / 2);
@@ -34,7 +37,14 @@ hash_tree * make_tree( const char * path, int val_err)
     make_hash_in_tree( fd, size_part, h_tree->left);  // заполняем дерево хешами
     make_hash_in_tree( fd, size_part, h_tree->right);
 
-    h_tree->main_hash = merge_hash( (h_tree->left)->hash, (h_tree->right)->hash);
+    if( h_tree->count_leaf == 0)
+    {
+        h_tree->main_hash = make_hash( fd, size_file);
+    }
+    else
+    {
+        h_tree->main_hash = merge_hash( (h_tree->left)->hash, (h_tree->right)->hash);
+    }
 
     close( fd);
 
@@ -74,10 +84,10 @@ void make_hash_in_tree( int fd, long size_part, node * p_node)
         }
         else
         {
-            p_node->hash = merge_hash( (p_node->lift)->hash, (p_node->right)->hash);  // обьединяем два хеша в один
-
             make_hash_in_tree( fd, size_part, p_node->lift);
             make_hash_in_tree( fd, size_part, p_node->right);
+            
+            p_node->hash = merge_hash( (p_node->lift)->hash, (p_node->right)->hash);  // обьединяем два хеша в один
         }
         
         return;
@@ -98,8 +108,6 @@ uint8_t * make_hash( int fd, long size_part)
         printf( "Make_hash: read send error\n");
         exit(1);
     }
-
-    printf( "seek = %ld\n", lseek( fd, 0, SEEK_CUR));
 
     blake3_hasher hasher;
     blake3_hasher_init(&hasher);
@@ -135,7 +143,14 @@ int make_size_leaf( float val_err, int * capacity)
     
     int size_pow = 0;
 
-    val_err = (int)val_err % 51;
+    if( val_err == 50)
+    {
+        val_err = 50;
+    }
+    else
+    {
+        val_err = (int)val_err % 50;
+    }
 
     int size_leaf = 100;
     int next_leaf = 50;
@@ -147,11 +162,18 @@ int make_size_leaf( float val_err, int * capacity)
         size_leaf = size_leaf / 2;
         next_leaf = next_leaf / 2;
 
-        if( next_leaf < val_err && val_err <= size_leaf)
+        if( val_err == size_leaf)
         {
             *capacity = size_pow;
-            printf("size_pow = %d\n", size_pow);
+
             return my_pow( 2, size_pow);
+        }
+
+        if( next_leaf <= val_err && val_err < size_leaf)
+        {
+            *capacity = size_pow+1;
+
+            return my_pow( 2, size_pow+1);
         }
     }
 
@@ -212,10 +234,14 @@ void print_hash_tree(const hash_tree* h_tree)
 
     printf("Right Subtree:\n");
     print_tree(h_tree->right, 1);
+
+    printf("\n");
 }
 
 void delete_hash_tree( hash_tree * tree)
 {
+    assert( tree != NULL);
+
     delete_tree( tree->left);
     delete_tree( tree->right);
 
@@ -228,6 +254,8 @@ void delete_tree( node * tree)
 {
     if( tree != NULL)
     {
+        assert( tree->hash != NULL);
+
         free(tree->hash);
         
         delete_tree( tree->lift);
@@ -243,12 +271,14 @@ void delete_tree( node * tree)
 
 int my_pow( int num, int step)
 {
+    assert( num >= 0);
+    assert( step >= 0);
+
     int res = 1;
 
     for ( int i = 0; i < step; i++)
     {
         res*= num;
-        printf( "res = %d\n", res);
     }
 
     return res;

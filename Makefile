@@ -2,7 +2,7 @@ CFLAGS = -Wall -g
 
 NAME = indexer
 
-OBJ = main.o  hasher.o
+OBJ = main.o  hasher.o comper.o
 
 
 all: $(NAME)
