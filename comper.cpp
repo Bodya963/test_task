@@ -12,6 +12,19 @@ int compar_tree( hash_tree * tree1, hash_tree * tree2, int val_err)
         return compar_hash( tree1->main_hash, tree2->main_hash);
     }
 
+    if( val_err >= 50)
+    {
+        if( compar_node( tree1->left, tree2->left, val_err))
+        {
+            return 1;
+        }
+
+        if( compar_node( tree1->right, tree2->right, val_err))
+        {
+            return 1;
+        }
+    }
+
     if( compar_hash( tree1->main_hash, tree2->main_hash))
     {
         return 1;
